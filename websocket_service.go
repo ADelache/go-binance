@@ -260,6 +260,23 @@ func WsTradeServe(symbol string, handler WsTradeHandler, errHandler ErrHandler) 
 	}
 	return wsServe(cfg, wsHandler, errHandler)
 }
+func WsFutureTradeServe(symbol string, handler WsTradeHandler, errHandler ErrHandler) (doneC, stopC chan struct{}, err error) {
+	endpoint := fmt.Sprintf("%s/%s@trade", baseFutureURL, strings.ToLower(symbol))
+	cfg := newWsConfig(endpoint)
+	wsHandler := func(message []byte) {
+		event := new(WsTradeEvent)
+		err := json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+		handler(event)
+	}
+	return wsServe(cfg, wsHandler, errHandler)
+}
+
+
+
 
 // WsTradeEvent define websocket trade event
 type WsTradeEvent struct {
